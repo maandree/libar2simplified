@@ -38,7 +38,7 @@ assert_streq_(const char *result, const char *expect, const char *code, int line
 {
 	if (nulstrcmp(result, expect)) {
 		if (from_lineno)
-			fprintf(stderr, "Assertion at line %i, form line %i failed:\n", lineno, from_lineno);
+			fprintf(stderr, "Assertion at line %i, from line %i failed:\n", lineno, from_lineno);
 		else
 			fprintf(stderr, "Assertion at line %i failed:\n", lineno);
 		fprintf(stderr, "\tcode:     %s\n", code);
@@ -55,7 +55,7 @@ assert_zueq_(size_t result, size_t expect, const char *code, int lineno)
 {
 	if (result != expect) {
 		if (from_lineno)
-			fprintf(stderr, "Assertion at line %i, form line %i failed:\n", lineno, from_lineno);
+			fprintf(stderr, "Assertion at line %i, from line %i failed:\n", lineno, from_lineno);
 		else
 			fprintf(stderr, "Assertion at line %i failed:\n", lineno);
 		fprintf(stderr, "\tcode:     %s\n", code);
