@@ -57,7 +57,7 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 		}
 #endif
 		if (!srand_called) {
-			srand((unsigned int)time(NULL));
+			srand((unsigned int)time(NULL) ^ (unsigned int)rand());
 			srand_called = 1;
 		}
 		for(; i < n; i++) {
