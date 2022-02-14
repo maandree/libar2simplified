@@ -391,6 +391,7 @@ int
 libar2simplified_hash(void *hash, void *msg, size_t msglen, struct libar2_argon2_parameters *params)
 {
 	struct libar2_context ctx;
+	int ret;
 
 	memset(&ctx, 0, sizeof(ctx));
 	ctx.autoerase_message = 1;
@@ -402,5 +403,8 @@ libar2simplified_hash(void *hash, void *msg, size_t msglen, struct libar2_argon2
 	ctx.join_thread_pool = join_thread_pool;
 	ctx.destroy_thread_pool = destroy_thread_pool;
 
-	return libar2_hash(hash, msg, msglen, params, &ctx);
+	ret = libar2_hash(hash, msg, msglen, params, &ctx);
+	if (ret)
+		libar2_erase(msg, msglen);
+	return ret;
 }
