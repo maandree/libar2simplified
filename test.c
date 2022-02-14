@@ -71,13 +71,11 @@ static void
 check_hash(const char *pwd_, size_t pwdlen, const char *hash, int lineno)
 {
 	struct libar2_argon2_parameters *params;
-	char *output[512], pwd[512], *tag_expect, *tag_got, *paramstr;
+	char *output[512], pwd[512], *tag_expect, *tag_got, *paramstr, *hash_got;
 	size_t taglen;
 
 	from_lineno = lineno;
 	errno = 0;
-
-	strcpy(pwd, pwd_);
 
 	assert(!!(params = libar2simplified_decode(hash, &tag_expect, NULL, NULL)));
 	assert_zueq(libar2_decode_base64(tag_expect, output, &taglen), strlen(tag_expect));
@@ -86,11 +84,19 @@ check_hash(const char *pwd_, size_t pwdlen, const char *hash, int lineno)
 	assert_streq(paramstr, hash);
 	free(paramstr);
 
+	strcpy(pwd, pwd_);
 	assert(!libar2simplified_hash(output, pwd, pwdlen, params));
 	tag_got = libar2simplified_encode_hash(params, output);
 	free(params);
 	assert_streq(tag_got, tag_expect);
 	free(tag_got);
+
+	if (strlen(pwd_) == pwdlen) { /* libar2simplified_crypt does not support NUL bytes in the password */
+		strcpy(pwd, pwd_);
+		hash_got = libar2simplified_crypt(pwd, hash, NULL);
+		assert_streq(hash_got, hash);
+		free(hash_got);
+	}
 
 	from_lineno = 0;
 }
@@ -131,6 +137,8 @@ main(void)
 	CHECK("password", "$argon2i$v=16$m=256,t=2,p=2$c29tZXNhbHQ$tsEVYKap1h6scGt5ovl9aLRGOqOth+AMB+KwHpDFZPs");
 	CHECK("password", "$argon2i$v=19$m=256,t=2,p=2$c29tZXNhbHQ$T/XOJ2mh1/TIpJHfCdQan76Q5esCFVoT5MAeIM1Oq2E");
 	CHECK("password", "$argon2id$v=19$m=256,t=2,p=2$c29tZXNhbHQ$bQk8UB/VmZZF4Oo79iDXuL5/0ttZwg2f/5U52iv1cDc");
+
+	CHECK("password", "$argon2id$v=19$m=2048,t=16,p=16$c29tZXNhbHQ$FRWpYzcrsos+DHNInvfsl0g8mZBdPqUdarIYh/Pnc1g");
 
 	return 0;
 }
