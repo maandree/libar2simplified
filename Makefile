@@ -47,7 +47,7 @@ test.o: test.c $(HDR)
 	$(CC) -fPIC -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
 test: test.o libar2simplified.a
-	$(CC) -o $@ test.o libar2simplified.a $(LDFLAGS)
+	$(CC) -o $@ test.o libar2simplified.a $(LDFLAGS) -lrt
 
 libar2simplified.a: $(OBJ)
 	@rm -f -- $@
