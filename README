@@ -1,0 +1,15 @@
+NAME
+	libar2simplified - Simplified interface for libar2
+
+DESCRIPTION
+	libar2simplified is façade for the libar2 C library that
+	implements the family of Argon2 key derivation function,
+	including Argon2d, Argon2i, and Argon2id, as well as
+	Argon2ds which was not part of the submission to the
+	Password Hashing Competition of 2013, which Argon2 won in
+	2015. As a key derivation function, Argon2 is well-suited
+	for cryptographically hashing (one-way encrypting)
+	passwords.
+
+SEE ALSO
+	libar2(7), crypt(3)

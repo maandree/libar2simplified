@@ -1,0 +1,89 @@
+.TH LIBAR2SIMPLIFIED_HASH 3 LIBAR2SIMPLIFIED
+.SH NAME
+libar2simplified_hash - Hash a password with Argon2
+
+.SH SYNOPSIS
+.nf
+#include <libar2simplified.h>
+
+int libar2simplified_hash(void *\fIhash\fP, void *\fImsg\fP, size_t \fImsglen\fP, struct libar2_argon2_parameters *\fIparams\fP);
+.fi
+.PP
+Link with
+.IR "-lar2simplified -lar2 -lblake -lrt -pthread" .
+
+.SH DESCRIPTION
+The
+.BR libar2simplified_hash ()
+function calculates an Argon2 if the message
+provided in the
+.I msg
+parameter, whose length (in bytes) is provided in the
+.I msglen
+parameter, according to the hashing parameters
+specified in the
+.I params
+parameter. See
+.BR libar2_hash (3)
+for more information about
+.IR params .
+The hash (tag) is stored, in raw binary format
+(does not include the hashing parameters) in
+the buffer provided via the
+.I hash
+parameter. This buffer must be at least
+.I libar2_hash_buf_size(params)
+bytes large.
+.PP
+The
+.BR libar2simplified_hash ()
+function will erase (not deallocate) the contents of
+.I msg
+before returning.
+.PP
+Only
+.I msg
+may be
+.IR NULL ,
+but only if
+.I msglen
+is 0.
+
+.SH RETURN VALUES
+The
+.BR libar2simplified_hash ()
+function returns 0 upon successful completion.
+On error, -1 is returned and
+.I errno
+is set to describe the error.
+
+.SH ERRORS
+The
+.BR libar2simplified_hash ()
+function will fail if:
+.TP
+.B EINVAL
+The contents of
+.I str
+is invalid or unsupported.
+.TP
+.B ENOMEM
+Insufficient storage space is available.
+.TP
+.BR ENOSPC " or " EAGAIN
+A resource required to initialise some item
+needed for threading-support has been exhausted
+or the number of instances of such items have
+been reached.
+.TP
+.B EOWNERDEAD
+A thread terminated unexpectedly.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2simplified_decode (3),
+.BR libar2simplified_encode (3),
+.BR libar2simplified_encode_hash (3),
+.BR libar2simplified_crypt (3),
+.BR libar2_hash (3),
+.BR libar2_hash_buf_size (3)

@@ -1,0 +1,48 @@
+.TH LIBAR2SIMPLIFIED 7 LIBAR2
+.SH NAME
+libar2simplified - Simplified interface for libar2
+
+.SH DESCRIPTION
+.B libar2simplified
+is façade for the
+.BR libar2 (7)
+C library that implements the family of Argon2 key
+derivation function, including Argon2d, Argon2i, and
+Argon2id, as well as Argon2ds which was not part of
+the submission to the Password Hashing Competition
+of 2013, which Argon2 won in 2015. As a key derivation
+function, Argon2 is well-suited for cryptographically
+hashing (one-way encrypting) passwords. Where as the
+.BR libar2 (7)
+library is suitable in any code-base, as long as it
+some standard C functions are avaible, since it does
+not interact with the operating system,
+.B libar2simplified
+can only be used in fully hosted environments, since
+it uses dynamic memory allocation, multi-threading,
+and interacts with the operating system to generate
+random salt or a seed used to generate the random
+data used for the salt.
+.PP
+.B libar2simplified
+provides two functions for calculating a hash:
+.BR libar2simplified_crypt (3)
+and
+.BR libar2simplified_hash (3).
+.BR libar2simplified_crypt (3)
+provides a
+.BR crypt (3)-style
+interface, whereas
+.BR libar2simplified_hash (3)
+provides a flexible interface that supports pepper,
+associated data, and NUL bytes in the message, and
+output the password hash in binary without prepending
+the parameters.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2simplified_crypt (3),
+.BR libar2simplified_decode (3),
+.BR libar2simplified_encode (3),
+.BR libar2simplified_encode_hash (3),
+.BR libar2simplified_hash (3)

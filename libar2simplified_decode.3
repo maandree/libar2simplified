@@ -1,0 +1,141 @@
+.TH LIBAR2SIMPLIFIED_DECODE 3 LIBAR2SIMPLIFIED
+.SH NAME
+libar2simplified_decode - Decode hashing parameters
+
+.SH SYNOPSIS
+.nf
+#include <libar2simplified.h>
+
+struct libar2_argon2_parameters *
+libar2simplified_decode(const char *\fIstr\fP, char **\fItagp\fP, char **\fIendp\fP,
+                        int (*\fIrandom_byte_generator\fP)(char *\fIout\fP, size_t \fIn\fP));
+.fi
+.PP
+Link with
+.IR "-lar2simplified -lar2" .
+
+.SH DESCRIPTION
+The
+.BR libar2simplified_decode ()
+function a decode hashing parameter string provided
+in the
+.I str
+parameter.
+.PP
+This function supports the extended format described in
+.BR libar2simplified_encode (3).
+If the parameter string only specifies a salt length, and
+not an actual salt, one is generate using the function
+provided via the
+.I random_byte_generator
+parameter; or if
+.I random_byte_generator
+is
+.IR NULL ,
+a function built into the libary itself. If the parameter
+string specifies a tag (hash result), a pointer to it
+is stored in
+.IR *tagp ,
+otherwise
+.I *tagp
+is set to
+.IR NULL .
+.RI ( *tagp
+is only set unless
+.I tagp
+is
+.IR NULL )
+.PP
+Unless
+.I endp
+is
+.IR NULL ,
+.I *endp
+will be set to the end of the parameter string, which
+terminates the tag. The application shall make sure
+that
+.I *endp
+is a proper termination of the parameter string,
+typically this would be a colon
+.RB ( : ),
+if read from
+.I /etc/shadow
+or a similar file, or a NUL byte. The
+.BR libar2simplified_decode ()
+function will
+.B not
+make this check even if
+.I endp
+is
+.IR NULL .
+.PP
+Unless
+.I random_byte_generator
+is
+.IR NULL ,
+it shall generate
+.I n
+random bytes and store them in
+.I out
+and return 0, or on failure -1. Each byte need
+only have its 6 lower bits set randomly.
+.PP
+The hashing string does not encode information
+about the secret (pepper) or associated data,
+which will therefore be set to zero-length.
+.PP
+.I params
+may not be
+.IR NULL .
+
+.SH RETURN VALUES
+The
+.BR libar2simplified_decode ()
+function returns a dynamically allocated
+structure detailing the contents of
+.IR str ,
+which can be deallocated using the
+.BR free (3)
+function, upon successful completion.
+On error,
+.I NULL
+is returned and
+.I errno
+is set to describe the error.
+
+.SH ERRORS
+The
+.BR libar2simplified_decode ()
+function will fail if:
+.TP
+.B EINVAL
+The contents of
+.I str
+is invalid or unsupported.
+.TP
+.B ENOMEM
+Insufficient storage space is available.
+.PP
+The
+.BR libar2simplified_decode ()
+function will fail if the
+.I random_byte_generator
+fails, in which case it will not modify
+the value of
+.IR errno .
+
+.SH NOTES
+The returned objects allocation size will
+exceed the size of its type, so that the
+salt can be stored in it, and automatically
+deallocated when the returned pointer is
+deallocated.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2simplified_encode (3),
+.BR libar2simplified_encode_hash (3),
+.BR libar2simplified_hash (3),
+.BR libar2_decode_params (3),
+.BR libar2_validate_params (3),
+.BR libar2_hash (3)

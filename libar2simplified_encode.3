@@ -1,0 +1,89 @@
+.TH LIBAR2SIMPLIFIED_ENCODE 3 LIBAR2SIMPLIFIED
+.SH NAME
+libar2simplified_encode - Encode hashing parameters, with or without hashing result
+
+.SH SYNOPSIS
+.nf
+#include <libar2simplified.h>
+
+char *libar2simplified_encode(const struct libar2_argon2_parameters *\fIparams\fP, void *\fIhash\fP);
+.fi
+.PP
+Link with
+.IR "-lar2simplified -lar2" .
+
+.SH DESCRIPTION
+The
+.BR libar2simplified_encode ()
+function encode hashing parameters provided via the
+.I params
+parameter, with or without the tag (hashing result)
+provided in the
+.I hash
+parameter.
+.PP
+This function extends the standard format for Argon2
+by letting the exact salt or tag (hash) be unspecified,
+but the length specified using an asterisk-prefixed,
+decimal integer. See
+.BR libar2_encode_params (3)
+for details about the standard format. To set the salt
+to unspecified, set
+.I params->salt
+to
+.IR NULL .
+To set the tag to unspecified, set
+.I hash
+to
+.IR NULL .
+See
+.BR libar2_hash (3)
+for details about
+.IR params .
+.PP
+The secret (pepper) and associated data, which may be
+set in
+.I params
+will not be included in the returned string.
+.PP
+.I params
+may not be
+.IR NULL .
+
+.SH RETURN VALUES
+The
+.BR libar2simplified_encode ()
+function returns a dynamically allocated string
+detailing the contents of
+.I params
+and
+.IR hash ,
+which can be deallocated using the
+.BR free (3)
+function, upon successful completion. On error,
+.I NULL
+is returned and
+.I errno
+is set to describe the error.
+
+.SH ERRORS
+The
+.BR libar2simplified_encode ()
+function will fail if:
+.TP
+.B EINVAL
+The contents of
+.I params
+is invalid or unsupported.
+.TP
+.B ENOMEM
+Insufficient storage space is available.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2simplified_encode_hash (3),
+.BR libar2simplified_decode (3),
+.BR libar2simplified_hash (3),
+.BR libar2_encode_params (3),
+.BR libar2_validate_params (3),
+.BR libar2_hash (3)

@@ -1,0 +1,60 @@
+.TH LIBAR2SIMPLIFIED_ENCODE_HASH 3 LIBAR2SIMPLIFIED
+.SH NAME
+libar2simplified_encode_hash - Encode hashing result without parameters
+
+.SH SYNOPSIS
+.nf
+#include <libar2simplified.h>
+
+char *libar2simplified_encode_hash(const struct libar2_argon2_parameters *\fIparams\fP, void *\fIhash\fP);
+.fi
+.PP
+Link with
+.IR "-lar2simplified -lar2" .
+
+.SH DESCRIPTION
+The
+.BR libar2simplified_encode_hash ()
+function encodes the contents of the
+.I hash
+parameter in base64, which is the encoding used
+for Argon2. The length of the contents must be
+set in
+.IR params->hashlen .
+The
+.I params
+parameter is otherwise unused.
+.PP
+Neither argument may be
+.IR NULL .
+
+.SH RETURN VALUES
+The
+.BR libar2simplified_encode_hash ()
+function returns a dynamically allocated string
+containing the contents of the
+.I hash
+parameter encoded in base64, which may be
+deallocated using the
+.BR free (3)
+function,  upon successful
+completion. On error,
+.I NULL
+is returned and
+.I errno
+is set to describe the error.
+
+.SH ERRORS
+The
+.BR libar2simplified_encode_hash ()
+function will fail if:
+.TP
+.B ENOMEM
+Insufficient storage space is available.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2simplified_encode (3),
+.BR libar2simplified_decode (3),
+.BR libar2simplified_hash (3),
+.BR libar2_encode_base64 (3)

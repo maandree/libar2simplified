@@ -28,6 +28,8 @@ HDR =\
 	common.h
 
 LOBJ = $(OBJ:.o=.lo)
+MAN3 = $(OBJ:.o=.3)
+MAN7 = libar2simplified.7
 
 
 all: libar2simplified.a libar2simplified.$(LIBEXT) test
@@ -57,11 +59,15 @@ check: test
 install: libar2simplified.a libar2simplified.$(LIBEXT)
 	mkdir -p -- "$(DESTDIR)$(PREFIX)/lib"
 	mkdir -p -- "$(DESTDIR)$(PREFIX)/include"
+	mkdir -p -- "$(DESTDIR)$(MANPREFIX)/man3"
+	mkdir -p -- "$(DESTDIR)$(MANPREFIX)/man7"
 	cp -- libar2simplified.a "$(DESTDIR)$(PREFIX)/lib/"
 	cp -- libar2simplified.$(LIBEXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMINOREXT)"
 	ln -sf -- libar2simplified.$(LIBMINOREXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMAJOREXT)"
 	ln -sf -- libar2simplified.$(LIBMAJOREXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBEXT)"
 	cp -- libar2simplified.h "$(DESTDIR)$(PREFIX)/include/"
+	cp -- $(MAN3) "$(DESTDIR)$(MANPREFIX)/man3/"
+	cp -- $(MAN7) "$(DESTDIR)$(MANPREFIX)/man7/"
 
 uninstall:
 	-rm -f -- "$(DESTDIR)$(PREFIX)/lib/libar2simplified.a"
@@ -69,6 +75,8 @@ uninstall:
 	-rm -f -- "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMINOREXT)"
 	-rm -f -- "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBEXT)"
 	-rm -f -- "$(DESTDIR)$(PREFIX)/include/libar2simplified.h"
+	-cd -- "$(DESTDIR)$(MANPREFIX)/man3/" && rm -f -- $(MAN3)
+	-cd -- "$(DESTDIR)$(MANPREFIX)/man7/" && rm -f -- $(MAN7)
 
 clean:
 	-rm -f -- *.o *.a *.lo *.su *.so *.so.* *.dll *.dylib
