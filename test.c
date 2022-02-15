@@ -68,37 +68,57 @@ assert_zueq_(size_t result, size_t expect, const char *code, int lineno)
 
 
 static void
-check_hash(const char *pwd_, size_t pwdlen, const char *hash, int lineno)
+check_hash(const char *pwd, size_t pwdlen, const char *input, const char *output,
+	   int (*saltgenerator)(char *out, size_t n), int lineno)
 {
 	struct libar2_argon2_parameters *params;
-	char *output[512], pwd[512], *tag_expect, *tag_got, *paramstr, *hash_got;
+	char tag_buf[512], pwd_buf[512], *input_tag, *tag_got, *paramstr, *output_got;
 	size_t taglen;
 
 	from_lineno = lineno;
 	errno = 0;
 
-	assert(!!(params = libar2simplified_decode(hash, &tag_expect, NULL, NULL)));
-	assert_zueq(libar2_decode_base64(tag_expect, output, &taglen), strlen(tag_expect));
-	assert_zueq(taglen, params->hashlen);
-	assert(!!(paramstr = libar2simplified_encode(params, output)));
-	assert_streq(paramstr, hash);
-	free(paramstr);
+	assert(!!(params = libar2simplified_decode(input, &input_tag, NULL, saltgenerator)));
+	if (input_tag) {
+		assert_zueq(libar2_decode_base64(input_tag, tag_buf, &taglen), strlen(input_tag));
+		assert_zueq(taglen, params->hashlen);
+		assert(!!(paramstr = libar2simplified_encode(params, tag_buf)));
+		assert_streq(paramstr, output);
+		free(paramstr);
+	}
 
-	strcpy(pwd, pwd_);
-	assert(!libar2simplified_hash(output, pwd, pwdlen, params));
-	tag_got = libar2simplified_encode_hash(params, output);
-	free(params);
-	assert_streq(tag_got, tag_expect);
+	strcpy(pwd_buf, pwd);
+	assert(!libar2simplified_hash(tag_buf, pwd_buf, pwdlen, params));
+	tag_got = libar2simplified_encode_hash(params, tag_buf);
+	assert_streq(tag_got, &strrchr(output, '$')[1]);
 	free(tag_got);
+	output_got = libar2simplified_encode(params, tag_buf);
+	assert_streq(output_got, output);
+	free(output_got);
+	free(params);
 
-	if (strlen(pwd_) == pwdlen) { /* libar2simplified_crypt does not support NUL bytes in the password */
-		strcpy(pwd, pwd_);
-		hash_got = libar2simplified_crypt(pwd, hash, NULL);
-		assert_streq(hash_got, hash);
-		free(hash_got);
+	if (strlen(pwd) == pwdlen && !saltgenerator) {
+		strcpy(pwd_buf, pwd);
+		output_got = libar2simplified_crypt(pwd_buf, input, NULL);
+		assert_streq(output_got, output);
+		free(output_got);
 	}
 
 	from_lineno = 0;
+}
+
+
+#define SALT_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+static int
+gensalt_ICAgICAgICA(char *out, size_t n)
+{
+	const char *salt = "ICAgICAgICA";
+	size_t i;
+	assert_zueq(n, strlen(salt));
+	for (i = 0; i < n; i++)
+		out[i] = (char)(strchr(SALT_ALPHABET, salt[i]) - SALT_ALPHABET);
+	return 0;
 }
 
 
@@ -106,7 +126,7 @@ int
 main(void)
 {
 #define CHECK(PWD, HASH)\
-	check_hash(MEM(PWD), HASH, __LINE__)
+	check_hash(MEM(PWD), HASH, HASH, NULL, __LINE__)
 
 	CHECK("\x00", "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$Eyx1BxGazSuPQoy7osaQuo20Dw9VI97dYUOgcC3cMgw");
 	CHECK("test", "$argon2i$v=19$m=4096,t=3,p=1$fn5/f35+f38$9tqKA4WMEsSAOEUwatjxvJLSqL1j0GQkgbsfnpresDw");
@@ -138,7 +158,23 @@ main(void)
 	CHECK("password", "$argon2i$v=19$m=256,t=2,p=2$c29tZXNhbHQ$T/XOJ2mh1/TIpJHfCdQan76Q5esCFVoT5MAeIM1Oq2E");
 	CHECK("password", "$argon2id$v=19$m=256,t=2,p=2$c29tZXNhbHQ$bQk8UB/VmZZF4Oo79iDXuL5/0ttZwg2f/5U52iv1cDc");
 
+	/* This hash is not well-known. It is used to test thread-support and was calculated with multi-threading disabled */
 	CHECK("password", "$argon2id$v=19$m=2048,t=16,p=16$c29tZXNhbHQ$FRWpYzcrsos+DHNInvfsl0g8mZBdPqUdarIYh/Pnc1g");
+
+#undef CHECK
+#define CHECK(PWD, INPUT, SALTGEN, OUTPUT)\
+	check_hash(MEM(PWD), INPUT, OUTPUT, SALTGEN, __LINE__)
+
+	CHECK("", "$argon2d$v=16$m=8,t=1,p=1$*8$*32", gensalt_ICAgICAgICA,
+	      "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$X54KZYxUSfMUihzebb70sKbheabHilo8gsUldrVU4IU");
+	CHECK("", "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$*32", NULL,
+	      "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$X54KZYxUSfMUihzebb70sKbheabHilo8gsUldrVU4IU");
+	CHECK("", "$argon2d$v=16$m=8,t=1,p=1$*8$X54KZYxUSfMUihzebb70sKbheabHilo8gsUldrVU4IU", gensalt_ICAgICAgICA,
+	      "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$X54KZYxUSfMUihzebb70sKbheabHilo8gsUldrVU4IU");
+	CHECK("", "$argon2d$v=16$m=8,t=1,p=1$*8$*100", gensalt_ICAgICAgICA,
+	      "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$"
+	      "NjODMrWrS7zeivNNpHsuxD9c6uDmUQ6YqPRhb8H5DSNw9n683FUCJZ3tyxgfJpYYANI"
+	      "+01WT/S5zp1UVs+qNRwnkdEyLKZMg+DIOXVc9z1po9ZlZG8+Gp4g5brqfza3lvkR9vw");
 
 	return 0;
 }
