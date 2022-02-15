@@ -19,6 +19,7 @@ LIB_NAME = ar2simplified
 OBJ =\
 	libar2simplified_crypt.o\
 	libar2simplified_decode.o\
+        libar2simplified_decode_r.o\
 	libar2simplified_encode.o\
 	libar2simplified_encode_hash.o\
 	libar2simplified_hash.o\

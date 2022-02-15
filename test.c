@@ -10,6 +10,8 @@
 
 #define SALT_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
+#define TIME_RECOMMENDATIONS 0
+
 
 #define MEM(S) S, sizeof(S) - 1
 
@@ -183,6 +185,7 @@ check_random_salt_generate(void)
 }
 
 
+#if TIME_RECOMMENDATIONS
 static void
 time_hash(const char *params_str, const char *params_name, int lineno)
 {
@@ -216,6 +219,7 @@ time_hash(const char *params_str, const char *params_name, int lineno)
 
 	from_lineno = 0;
 }
+#endif
 
 
 static int
@@ -291,7 +295,7 @@ main(void)
 	assert_streq(libar2simplified_recommendation(1), RECOMMENDATION_SIDE_CHANNEL_FREE_ENVIRONMENT);
 #endif
 
-#if 0
+#if TIME_RECOMMENDATIONS
 #define TIME_HASH(PARAMS) time_hash(PARAMS, #PARAMS, __LINE__)
 	TIME_HASH(libar2simplified_recommendation(0));
 	TIME_HASH(libar2simplified_recommendation(1));

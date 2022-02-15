@@ -1,14 +1,15 @@
-.TH LIBAR2SIMPLIFIED_DECODE 3 LIBAR2SIMPLIFIED
+.TH LIBAR2SIMPLIFIED_DECODE_R 3 LIBAR2SIMPLIFIED
 .SH NAME
-libar2simplified_decode - Decode hashing parameters
+libar2simplified_decode_r - Decode hashing parameters
 
 .SH SYNOPSIS
 .nf
 #include <libar2simplified.h>
 
 struct libar2_argon2_parameters *
-libar2simplified_decode(const char *\fIstr\fP, char **\fItagp\fP, char **\fIendp\fP,
-                        int (*\fIrandom_byte_generator\fP)(char *\fIout\fP, size_t \fIn\fP));
+libar2simplified_decode_r(const char *\fIstr\fP, char **\fItagp\fP, char **\fIendp\fP,
+                          int (*\fIrandom_byte_generator\fP)(char *\fIout\fP, size_t \fIn\fP, void *\fIuser_data\fP),
+                          void *\fIuser_data\fP);
 .fi
 .PP
 Link with
@@ -16,7 +17,7 @@ Link with
 
 .SH DESCRIPTION
 The
-.BR libar2simplified_decode ()
+.BR libar2simplified_decode_r ()
 function a decode hashing parameter string provided
 in the
 .I str
@@ -61,7 +62,7 @@ typically this would be a colon
 if read from
 .I /etc/shadow
 or a similar file, or a NUL byte. The
-.BR libar2simplified_decode ()
+.BR libar2simplified_decode_r ()
 function will
 .B not
 make this check even if
@@ -77,8 +78,12 @@ it shall generate
 .I n
 random bytes and store them in
 .I out
-and return 0, or on failure -1. Each byte need
-only have its 6 lower bits set randomly.
+and return 0, or on failure -1.
+.I user_data
+will be passed as is as the third argument to
+.IR *random_byte_generator .
+Each byte need only have its 6 lower bits set
+randomly.
 .PP
 The hashing string does not encode information
 about the secret (pepper) or associated data,
@@ -90,7 +95,7 @@ may not be
 
 .SH RETURN VALUES
 The
-.BR libar2simplified_decode ()
+.BR libar2simplified_decode_r ()
 function returns a dynamically allocated
 structure detailing the contents of
 .IR str ,
@@ -105,7 +110,7 @@ is set to describe the error.
 
 .SH ERRORS
 The
-.BR libar2simplified_decode ()
+.BR libar2simplified_decode_r ()
 function will fail if:
 .TP
 .B EINVAL
@@ -117,7 +122,7 @@ is invalid or unsupported.
 Insufficient storage space is available.
 .PP
 The
-.BR libar2simplified_decode ()
+.BR libar2simplified_decode_r ()
 function will fail if the
 .I random_byte_generator
 fails, in which case it will not modify
@@ -133,7 +138,7 @@ deallocated.
 
 .SH SEE ALSO
 .BR libar2simplified (7),
-.BR libar2simplified_decode_r (3),
+.BR libar2simplified_decode (3),
 .BR libar2simplified_encode (3),
 .BR libar2simplified_encode_hash (3),
 .BR libar2simplified_recommendation (3),

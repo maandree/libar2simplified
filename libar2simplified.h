@@ -105,6 +105,52 @@ struct libar2_argon2_parameters *
 libar2simplified_decode(const char *str, char **tagp, char **endp, int (*random_byte_generator)(char *out, size_t n));
 
 /**
+ * Decode hashing parameters
+ * 
+ * If the salt's lengths is encoded, but not an
+ * actual salt, a random salt will be created
+ * 
+ * The hashing string does not encode information
+ * about `params->key` or `params->ad`, therefore
+ * `params->key` and `params->ad` will be set to
+ * `NULL` and `params->keylen` and `params->adlen`
+ * will be set to 0; where `params` is the returned
+ * pointer
+ * 
+ * @param   str                    The hashing parameter string to decode
+ * @param   tagp                   Output parameter for the tag (hash result), or `NULL`.
+ *                                 Unless `NULL`, `NULL` will be stored in `*tagp` if `str`
+ *                                 includes a tag length instead of an actual tag, otherwise
+ *                                 unless `NULL`, the beginning of the tag, in `str`, will
+ *                                 be stored in `*tagp`. `*endp` will (unless `endp` or
+ *                                 `*tagp` is `NULL`) mark the end of the tag.
+ * @param   endp                   Output parameter for the end of the hashing parameter
+ *                                 string, or `NULL`. Unless `NULL`, one position beyond the
+ *                                 last byte in `str` determined to be part of the hashing
+ *                                 parameter string will be stored in `*endp`. The application
+ *                                 shall make sure that `**endp` is a valid termination of
+ *                                 the hashing parameter string; typically this would be a ':'
+ *                                 or a NUL byte.
+ * @param   random_byte_generator  Random number generator function, used to generate salt if
+ *                                 `str` does not contain one. The function shall output `n`
+ *                                 random bytes (only the lower 6 bits in each byte need to
+ *                                 be random) to `out` and return 0. On failure, the function
+ *                                 shall return -1. If `NULL`, the function will use a random
+ *                                 number generator provided by the C standard library or the
+ *                                 operating system.
+ * @param   user_data              Will be parsed as is as the third argument of
+ *                                 `random_byte_generator` and is otherwise unused.
+ * @return                         Decoded hashing parameters. Shall be deallocated using
+ *                                 free(3) when no longer needed. Be aware than the allocation
+ *                                 size of the returned object will exceed the size of the
+ *                                 return type.
+ */
+LIBAR2_PUBLIC__ LIBAR2_NONNULL__(1)
+struct libar2_argon2_parameters *
+libar2simplified_decode_r(const char *str, char **tagp, char **endp,
+                          int (*random_byte_generator)(char *out, size_t n, void *user_data), void *user_data);
+
+/**
  * Calculate a password hash
  * 
  * @param   hash    Output parameter for the tag (hash result).
