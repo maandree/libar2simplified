@@ -85,6 +85,8 @@ thread_loop(void *data_)
 
 	for (;;) {
 		if (sem_wait(&data->semaphore)) {
+			if (errno == EINTR)
+				continue;
 			data->error = errno;
 			return NULL;
 		}
@@ -299,8 +301,11 @@ await_threads(size_t *indices, size_t n, size_t require, struct libar2_context *
 
 	for (;;) {
 		if (ret < require) {
-			if (sem_wait(&data->semaphore))
+			if (sem_wait(&data->semaphore)) {
+				if (errno == EINTR)
+					continue;
 				return 0;
+			}
 		} else if (sem_trywait(&data->semaphore)) {
 			if (errno == EAGAIN)
 				break;
