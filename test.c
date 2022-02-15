@@ -1,5 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
+#ifdef __linux__
+#include <sys/random.h>
+#endif
+
+#define SALT_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 
 #define MEM(S) S, sizeof(S) - 1
@@ -108,7 +113,69 @@ check_hash(const char *pwd, size_t pwdlen, const char *input, const char *output
 }
 
 
-#define SALT_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+#ifdef __linux__
+static ssize_t getrandom_return;
+static char getrandom_random0;
+#endif
+
+ssize_t
+getrandom(void *buf, size_t buflen, unsigned int flags)
+{
+	size_t i;
+	assert(flags == GRND_NONBLOCK);
+	if (getrandom_return < 0)
+		return getrandom_return;
+	for (i = 0; i < buflen && i < (size_t)getrandom_return; i++)
+		((char *)buf)[i] = (char)((size_t)getrandom_random0 + i);
+	return (ssize_t)i;
+}
+
+static void
+check_random_salt_generate(void)
+{
+	struct libar2_argon2_parameters *params[8];
+	size_t i, num_equal_first;
+
+#ifdef __linux__
+	char expected_salt[8];
+	const char *expected_salts[] = {
+		"AAAAAAAAAAA",
+		"BCBCBCBCBCB",
+		"CDECDECDECD",
+		"DEFGDEFGDEF",
+		"EFGHIEFGHIE",
+		"FGHIJKFGHIJ",
+		"GHIJKLMGHIJ",
+		"HIJKLMNOHIJ"
+	};
+
+	for (i = 0; i < sizeof(params) / sizeof(*params); i++) {
+		getrandom_return = (ssize_t)(i + 1);
+		getrandom_random0 = (char)i;
+		assert(!!(params[i] = libar2simplified_decode("$argon2d$v=16$m=8,t=1,p=1$*8$*8", NULL, NULL, NULL)));
+		assert_zueq(params[i]->saltlen, sizeof(expected_salt));
+		libar2_decode_base64(expected_salts[i], expected_salt, &(size_t){0});
+		assert(!memcmp(params[i]->salt, expected_salt, sizeof(expected_salt)));
+		free(params[i]);
+	}
+
+	getrandom_return = -1;
+	getrandom_random0 = 0;
+#endif
+
+	num_equal_first = 0;
+	for (i = 0; i < sizeof(params) / sizeof(*params); i++) {
+		assert(!!(params[i] = libar2simplified_decode("$argon2d$v=16$m=8,t=1,p=1$*8$*8", NULL, NULL, NULL)));
+	}
+	for (i = 1; i < sizeof(params) / sizeof(*params); i++) {
+		assert_zueq(params[i]->saltlen, params[0]->saltlen);
+		num_equal_first += !memcmp(params[i]->salt, params[0]->salt, params[0]->saltlen);
+		free(params[i]);
+	}
+	free(params[0]);
+	assert(num_equal_first <= (sizeof(params) / sizeof(*params) - 1) / 4);
+}
+
 
 static int
 gensalt_ICAgICAgICA(char *out, size_t n)
@@ -175,6 +242,8 @@ main(void)
 	      "$argon2d$v=16$m=8,t=1,p=1$ICAgICAgICA$"
 	      "NjODMrWrS7zeivNNpHsuxD9c6uDmUQ6YqPRhb8H5DSNw9n683FUCJZ3tyxgfJpYYANI"
 	      "+01WT/S5zp1UVs+qNRwnkdEyLKZMg+DIOXVc9z1po9ZlZG8+Gp4g5brqfza3lvkR9vw");
+
+	check_random_salt_generate();
 
 	return 0;
 }
