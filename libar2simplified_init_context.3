@@ -1,0 +1,54 @@
+.TH LIBAR2SIMPLIFIED_INIT_CONTEXT 3 LIBAR2SIMPLIFIED
+.SH NAME
+libar2simplified_init_context - Create context for libar2_hash
+
+.SH SYNOPSIS
+.nf
+#include <libar2simplified.h>
+
+void libar2simplified_init_context(struct libar2_context *ctxp);
+.fi
+.PP
+Link with
+.IR "-lar2simplified -lrt -pthread" .
+
+.SH DESCRIPTION
+The
+.BR libar2simplified_init_context ()
+function initialises the context argument
+for the
+.BR libar2_hash (3)
+function, provided via the
+.I ctxp
+parameter, with all auto-erase options
+turned off.
+.PP
+This function provides a dynamic memory
+management functions that erase memory
+before it is deallocated. It also also
+provides a multi-threading support using
+a thread pool.
+.PP
+This function is used internally by the
+.BR libar2simplified (7)
+library, but cannot be used with any
+function provided by the library, it can
+however be used together with the
+.BR libar2 (7)
+library, specifically it is designed for the
+.BR libar2_hash (3)
+function, but can also be used with the
+.BR libar2_decode_params (3)
+function.
+
+.SH RETURN VALUES
+None.
+
+.SH ERRORS
+The
+.BR libar2simplified_recommendation ()
+function cannot fail.
+
+.SH SEE ALSO
+.BR libar2simplified (7),
+.BR libar2_hash (3)

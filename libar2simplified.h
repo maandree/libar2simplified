@@ -162,4 +162,20 @@ int libar2simplified_hash(void *hash, void *msg, size_t msglen, struct libar2_ar
 LIBAR2_PUBLIC__ LIBAR2_NONNULL__(1, 2)
 char *libar2simplified_crypt(char *msg, const char *params, char *rv);
 
+/* Lower-level functions: */
+
+/**
+ * Initialises the context argument for `libar2_hash`,
+ * with all auto-erase options turned off
+ * 
+ * This function provides a dynamic memory management
+ * functions that erase memory before it is deallocated.
+ * It also also provides a multi-threading support using
+ * a thread pool.
+ * 
+ * @param  ctxp  Output parameter
+ */
+LIBAR2_PUBLIC__
+void libar2simplified_init_context(struct libar2_context *ctxp);
+
 #endif
