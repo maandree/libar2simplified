@@ -53,7 +53,8 @@ char *libar2simplified_encode_hash(const struct libar2_argon2_parameters *params
  * about `params->key` or `params->ad`, therefore
  * `params->key` and `params->ad` will be set to
  * `NULL` and `params->keylen` and `params->adlen`
- * will be set to 0
+ * will be set to 0; where `params` is the returned
+ * pointer
  * 
  * @param   str                    The hashing parameter string to decode
  * @param   tagp                   Output parameter for the tag (hash result), or `NULL`.

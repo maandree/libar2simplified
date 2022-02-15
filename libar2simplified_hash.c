@@ -260,44 +260,6 @@ init_thread_pool(size_t desired, size_t *createdp, struct libar2_context *ctx)
 }
 
 
-/*
- * INIT_THREAD_POOL
- *   slave semaphores: 0
- *   master semaphore: 0
- *   all ressting
- * 
- * THREAD_LOOP
- *   acquire slave
- *   run function(input)
- *   with lock on master {
- *       mark as resting
- *       release master
- *   }
- * 
- * RUN_THREAD
- *   with lock on master {
- *      mark as busy
- *   }
- *   set function & input
- *   release slave
- * 
- * AWAIT_THREADS
- *   for (ret = 0; ret < require;) {
- *       acquire master
- *       with lock on master {
- *          mark one resting as joined
- *          ret += 1
- *       }
- *   }
- *   while (try-acquire master) {
- *       with lock on master {
- *          mark one resting as joined
- *          ret += 1
- *       }
- *   }
- *   return ret
- */
-
 #if defined(__GNUC__)
 __attribute__((__const__))
 #endif
