@@ -4,6 +4,24 @@
 
 #include <libar2.h>
 
+/**
+ * Get a recommended set of hashing parameter
+ * 
+ * These shall not be taken too seriously, they are
+ * just for getting you up and running. You should
+ * tweak the them to your requirements.
+ * 
+ * @param   side_channel_free  Whether the environment is considered safe
+ *                             enought against side-channel attacks, use 0 if
+ *                             you don't know (it is very unlikely that it is)
+ * @return                     Hashing parameters than can be used for
+ *                             `libar2simplified_crypt` or `libar2simplified_decode`
+ */
+#if defined(__GNUC__)
+__attribute__((const))
+#endif
+const char *libar2simplified_recommendation(int side_channel_free);
+
 /* These are useful when the database stores parameters and
  * hash separately, when the application uses a pepper, or
  * when composing multiple hash functions: */

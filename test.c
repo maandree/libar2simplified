@@ -3,6 +3,10 @@
 #ifdef __linux__
 #include <sys/random.h>
 #endif
+#include <time.h>
+#ifndef CLOCK_MONOTONIC_RAW
+# define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
+#endif
 
 #define SALT_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -114,8 +118,9 @@ check_hash(const char *pwd, size_t pwdlen, const char *input, const char *output
 
 
 #ifdef __linux__
-static ssize_t getrandom_return;
+static ssize_t getrandom_return = -1;
 static char getrandom_random0;
+static int getrandom_real;
 #endif
 
 ssize_t
@@ -149,6 +154,7 @@ check_random_salt_generate(void)
 		"HIJKLMNOHIJ"
 	};
 
+	getrandom_real = 0;
 	for (i = 0; i < sizeof(params) / sizeof(*params); i++) {
 		getrandom_return = (ssize_t)(i + 1);
 		getrandom_random0 = (char)i;
@@ -177,6 +183,41 @@ check_random_salt_generate(void)
 }
 
 
+static void
+time_hash(const char *params_str, const char *params_name, int lineno)
+{
+	struct libar2_argon2_parameters *params;
+	unsigned char hash[1024];
+	struct timespec start, end;
+	uintmax_t ms, sub_ms;
+	int r;
+
+	from_lineno = lineno;
+	errno = 0;
+
+	assert(!!(params = libar2simplified_decode(params_str, NULL, NULL, NULL)));
+	assert(params->hashlen <= sizeof(hash));
+	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+	r = libar2simplified_hash(hash, NULL, 0, params);
+	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+	assert(!r);
+	free(params);
+	end.tv_sec -= start.tv_sec;
+	end.tv_nsec -= start.tv_nsec;
+	if (end.tv_nsec < 0) {
+		end.tv_sec -= 1;
+		end.tv_nsec += 1000000000L;
+	}
+	ms = (uintmax_t)end.tv_sec;
+	ms *= 1000;
+	ms += (uintmax_t)(end.tv_nsec / 1000000L);
+	sub_ms = (uintmax_t)(end.tv_nsec % 1000000L);
+	fprintf(stderr, "Hash time for %s: %ju.%06jums\n", params_name, ms, sub_ms);
+
+	from_lineno = 0;
+}
+
+
 static int
 gensalt_ICAgICAgICA(char *out, size_t n)
 {
@@ -192,6 +233,7 @@ gensalt_ICAgICAgICA(char *out, size_t n)
 int
 main(void)
 {
+#if 1
 #define CHECK(PWD, HASH)\
 	check_hash(MEM(PWD), HASH, HASH, NULL, __LINE__)
 
@@ -244,6 +286,16 @@ main(void)
 	      "+01WT/S5zp1UVs+qNRwnkdEyLKZMg+DIOXVc9z1po9ZlZG8+Gp4g5brqfza3lvkR9vw");
 
 	check_random_salt_generate();
+
+	assert_streq(libar2simplified_recommendation(0), RECOMMENDATION_SIDE_CHANNEL_ENVIRONMENT);
+	assert_streq(libar2simplified_recommendation(1), RECOMMENDATION_SIDE_CHANNEL_FREE_ENVIRONMENT);
+#endif
+
+#if 0
+#define TIME_HASH(PARAMS) time_hash(PARAMS, #PARAMS, __LINE__)
+	TIME_HASH(libar2simplified_recommendation(0));
+	TIME_HASH(libar2simplified_recommendation(1));
+#endif
 
 	return 0;
 }

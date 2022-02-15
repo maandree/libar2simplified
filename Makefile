@@ -21,7 +21,8 @@ OBJ =\
 	libar2simplified_decode.o\
 	libar2simplified_encode.o\
 	libar2simplified_encode_hash.o\
-	libar2simplified_hash.o
+	libar2simplified_hash.o\
+	libar2simplified_recommendation.o
 
 HDR =\
 	libar2simplified.h\
