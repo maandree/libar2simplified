@@ -56,47 +56,37 @@ char *libar2simplified_encode_hash(const struct libar2_argon2_parameters *params
  * will be set to 0
  * 
  * @param   str                    The hashing parameter string to decode
- * @param   tagp                   Output parameter for the tag (hash
- *                                 result), or `NULL`. Unless `NULL`,
- *                                 `NULL` will be stored in `*tagp` if
- *                                 `str` includes a tag length instead
- *                                 of an actual tag, otherwise unless
- *                                 `NULL`, the beginning of the tag, in
- *                                 `str`, will be stored in `*tagp`.
- *                                 `*endp` will (unless `endp` or `*tagp`
- *                                 is `NULL`) mark the end of the tag.
- * @param   endp                   Output parameter for the end of the
- *                                 hashing parameter string, or `NULL`.
- *                                 Unless `NULL`, one position beyond
- *                                 the last byte in `str` determined to
- *                                 be part of the hashing parameter
- *                                  string will be stored in `*endp`.
- *                                 The application shall make sure that
- *                                 `**endp` is a valid termination of
- *                                 the hashing parameter string; typically
- *                                 this would be a ':' or a NUL byte.
- * @param   random_byte_generator  Random number generator function, used
- *                                 to generate salt if `str` does not
- *                                 contain one. The function shall output
- *                                 `n` random bytes (only the lower 6 bits
- *                                 in each byte need to be random) to
- *                                 `out` and return 0. On failure, the
- *                                 function shall return -1. If `NULL`,
- *                                 the function will use a random number
- *                                 generator provided by the C standard
- *                                 library or the operating system.
- * @return                         Decoded hashing parameters. Shall be
- *                                 deallocated using free(3) when no longer
- *                                 needed. Be aware than the allocation
- *                                 size of the returned object will exceed
- *                                 the size of the return type.
+ * @param   tagp                   Output parameter for the tag (hash result), or `NULL`.
+ *                                 Unless `NULL`, `NULL` will be stored in `*tagp` if `str`
+ *                                 includes a tag length instead of an actual tag, otherwise
+ *                                 unless `NULL`, the beginning of the tag, in `str`, will
+ *                                 be stored in `*tagp`. `*endp` will (unless `endp` or
+ *                                 `*tagp` is `NULL`) mark the end of the tag.
+ * @param   endp                   Output parameter for the end of the hashing parameter
+ *                                 string, or `NULL`. Unless `NULL`, one position beyond the
+ *                                 last byte in `str` determined to be part of the hashing
+ *                                 parameter string will be stored in `*endp`. The application
+ *                                 shall make sure that `**endp` is a valid termination of
+ *                                 the hashing parameter string; typically this would be a ':'
+ *                                 or a NUL byte.
+ * @param   random_byte_generator  Random number generator function, used to generate salt if
+ *                                 `str` does not contain one. The function shall output `n`
+ *                                 random bytes (only the lower 6 bits in each byte need to
+ *                                 be random) to `out` and return 0. On failure, the function
+ *                                 shall return -1. If `NULL`, the function will use a random
+ *                                 number generator provided by the C standard library or the
+ *                                 operating system.
+ * @return                         Decoded hashing parameters. Shall be deallocated using
+ *                                 free(3) when no longer needed. Be aware than the allocation
+ *                                 size of the returned object will exceed the size of the
+ *                                 return type.
  */
 LIBAR2_PUBLIC__ LIBAR2_NONNULL__(1)
 struct libar2_argon2_parameters *
 libar2simplified_decode(const char *str, char **tagp, char **endp, int (*random_byte_generator)(char *out, size_t n));
 
 /**
- * Calculate a password hashing
+ * Calculate a password hash
  * 
  * @param   hash    Output parameter for the tag (hash result).
  *                  This must be a buffer than is at least
@@ -114,7 +104,7 @@ int libar2simplified_hash(void *hash, void *msg, size_t msglen, struct libar2_ar
 /* This one is useful you just want to do it crypt(3)-style: */
 
 /**
- * Calculate a password hashing
+ * Calculate a password hash
  * 
  * This function works like crypt(3), except that it only supports
  * Argon2, it will erase the input password, the return buffer is
