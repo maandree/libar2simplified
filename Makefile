@@ -66,6 +66,7 @@ install: libar2simplified.a libar2simplified.$(LIBEXT)
 	mkdir -p -- "$(DESTDIR)$(MANPREFIX)/man7"
 	cp -- libar2simplified.a "$(DESTDIR)$(PREFIX)/lib/"
 	cp -- libar2simplified.$(LIBEXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMINOREXT)"
+	$(FIX_INSTALL_NAME) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMINOREXT)"
 	ln -sf -- libar2simplified.$(LIBMINOREXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBMAJOREXT)"
 	ln -sf -- libar2simplified.$(LIBMAJOREXT) "$(DESTDIR)$(PREFIX)/lib/libar2simplified.$(LIBEXT)"
 	cp -- libar2simplified.h "$(DESTDIR)$(PREFIX)/include/"
