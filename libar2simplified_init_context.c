@@ -155,9 +155,9 @@ destroy_thread_pool(struct libar2_context *ctx)
 		if (data->threads[i].error)
 			ret = data->threads[i].error;
 	}
-	free(data->threads);
 	sem_destroy(&data->semaphore);
 	pthread_mutex_destroy(&data->mutex);
+	free(data->threads);
 	free(data);
 	return ret;
 }
@@ -216,6 +216,10 @@ init_thread_pool(size_t desired, size_t *createdp, struct libar2_context *ctx)
 	size = (desired + 63) / 64;
 	size *= sizeof(uint_least64_t) * 2;
 	data = alignedalloc(1, offsetof(struct user_data, resting), size, ALIGNOF(struct user_data));
+	if (!data) {
+		errno = ENOMEM;
+		return -1;
+	}
 	memset(data, 0, offsetof(struct user_data, resting) + size);
 	data->joined = &data->resting[(desired + 63) / 64];
 	ctx->user_data = data;
