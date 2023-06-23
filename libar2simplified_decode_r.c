@@ -1,7 +1,9 @@
 /* See LICENSE file for copyright and license details. */
 #include "common.h"
 #ifdef __linux__
+#include <sys/auxv.h>
 #include <sys/random.h>
+#include <stdint.h>
 #endif
 #include <time.h>
 
@@ -37,11 +39,16 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 #define ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 	static int srand_called = 0;
 
+	unsigned seed;
 	double x;
 	size_t i;
 	int xi;
 #ifdef __linux__
 	ssize_t r;
+# ifdef AT_RANDOM
+	uintptr_t raddr_;
+	uint16_t *raddr;
+# endif
 #endif
 
 	if (random_byte_generator) {
@@ -58,7 +65,23 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 #endif
 		if (i < n) {
 			if (!srand_called) {
-				srand((unsigned int)time(NULL) ^ (unsigned int)rand());
+				seed = (unsigned)time(NULL) ^ (unsigned)rand();
+				seed ^= (unsigned)(uintptr_t)out;
+#if defined(__linux__) && defined(AT_RANDOM)
+				raddr_ = (uintptr_t)getauxval(AT_RANDOM);
+				if (raddr_) {
+					raddr = (void *)raddr_;
+					seed ^= (unsigned)raddr[0];
+					seed ^= (unsigned)raddr[1];
+					seed ^= (unsigned)raddr[2];
+					seed ^= (unsigned)raddr[3];
+					seed ^= (unsigned)raddr[4];
+					seed ^= (unsigned)raddr[5];
+					seed ^= (unsigned)raddr[6];
+					seed ^= (unsigned)raddr[7];
+				}
+#endif
+				srand(seed);
 				srand_called = 1;
 			}
 			do {
