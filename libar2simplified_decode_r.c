@@ -50,22 +50,24 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 	} else {
 		i = 0;
 #ifdef __linux__
-		for(; i < n; i += (size_t)r) {
+		for (; i < n; i += (size_t)r) {
 			r = getrandom(&out[i], n - i, GRND_NONBLOCK);
-			if(r < 0)
+			if (r < 0)
 				break;
 		}
 #endif
-		if (!srand_called) {
-			srand((unsigned int)time(NULL) ^ (unsigned int)rand());
-			srand_called = 1;
-		}
-		for(; i < n; i++) {
-			xi = rand();
-			x = (double)xi;
-			x /= (double)RAND_MAX;
-			x *= 63;
-			out[i] = (char)x;
+		if (i < n) {
+			if (!srand_called) {
+				srand((unsigned int)time(NULL) ^ (unsigned int)rand());
+				srand_called = 1;
+			}
+			do {
+				xi = rand();
+				x = (double)xi;
+				x /= (double)RAND_MAX;
+				x *= 63;
+				out[i] = (char)x;
+			} while (++i < n);
 		}
 	}
 
