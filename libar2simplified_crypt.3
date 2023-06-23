@@ -40,7 +40,7 @@ may use the extended format specified in
 .BR libar2simplified_encode (3).
 .PP
 The
-.BR libar2simplified_hash (3)
+.BR libar2simplified_crypt (3)
 function will erase (not deallocate) the contents of
 .I msg
 before returning.
@@ -108,7 +108,7 @@ function will fail if:
 .TP
 .B EINVAL
 The contents of
-.I str
+.I params
 is invalid or unsupported.
 .TP
 .B ENOMEM
