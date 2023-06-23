@@ -95,7 +95,7 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 	}
 
 	for (i = 0; i < n; i++)
-		out[i] = ALPHABET[out[i] % 64];
+		out[i] = ALPHABET[out[i] & 63];
 	return 0;
 }
 
