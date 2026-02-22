@@ -1,21 +1,21 @@
-.TH LIBAR2SIMPLIFIED 7 LIBAR2
+.TH LIBAR2SIMPLIFIED 7 LIBAR2SIMPLIFIED
 .SH NAME
 libar2simplified - Simplified interface for libar2
 
 .SH DESCRIPTION
 .B libar2simplified
-is façade for the
+is a façade for the
 .BR libar2 (7)
 C library that implements the family of Argon2 key
-derivation function, including Argon2d, Argon2i, and
+derivation functions, including Argon2d, Argon2i, and
 Argon2id, as well as Argon2ds which was not part of
 the submission to the Password Hashing Competition
 of 2013, which Argon2 won in 2015. As a key derivation
 function, Argon2 is well-suited for cryptographically
-hashing (one-way encrypting) passwords. Where as the
+hashing (one-way encrypting) passwords. Whereas the
 .BR libar2 (7)
-library is suitable in any code-base, as long as it
-some standard C functions are avaible, since it does
+library is suitable for any code-base, as long as it has
+some standard C functions available, since it does
 not interact with the operating system,
 .B libar2simplified
 can only be used in fully hosted environments, since
