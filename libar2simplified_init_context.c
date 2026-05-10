@@ -53,11 +53,11 @@ allocate(size_t num, size_t size, size_t alignment, struct libar2_context *ctx)
 	size_t pad = (alignment - ((2 * sizeof(size_t)) & (alignment - 1))) & (alignment - 1);
 	char *ptr = alignedalloc(num, size, pad + 2 * sizeof(size_t), alignment);
 	if (ptr) {
-		ptr = &ptr[pad];
-		*(size_t *)ptr = pad;
-		ptr = &ptr[sizeof(size_t)];
-		*(size_t *)ptr = num * size;
-		ptr = &ptr[sizeof(size_t)];
+		ptr += pad;
+		memcpy(ptr, &pad, sizeof(size_t));
+		ptr += sizeof(size_t);
+		memcpy(ptr, &(size_t){num * size}, sizeof(size_t));
+		ptr += sizeof(size_t);
 	}
 	(void) ctx;
 	return ptr;
@@ -68,10 +68,13 @@ static void
 deallocate(void *ptr, struct libar2_context *ctx)
 {
 	char *p = ptr;
+	size_t size, pad;
 	p -= sizeof(size_t);
-	libar2_erase(ptr, *(size_t *)p);
+	memcpy(&size, p, sizeof(size_t));
 	p -= sizeof(size_t);
-	p -= *(size_t *)p;
+	memcpy(&pad, p, sizeof(size_t));
+	p -= pad;
+	libar2_erase(p, size + pad + 2u * sizeof(size_t));
 	free(p);
 	(void) ctx;
 }
