@@ -51,8 +51,9 @@ alignedalloc(size_t num, size_t size, size_t extra, size_t alignment)
 static void *
 allocate(size_t num, size_t size, size_t alignment, struct libar2_context *ctx)
 {
-	size_t pad = (alignment - ((2 * sizeof(size_t)) & (alignment - 1))) & (alignment - 1);
-	char *ptr = alignedalloc(num, size, pad + 2 * sizeof(size_t), alignment);
+	size_t extra = 2 * sizeof(size_t);
+	size_t pad = -extra & (alignment - 1);
+	char *ptr = alignedalloc(num, size, pad + extra, alignment);
 	if (ptr) {
 		ptr += pad;
 		memcpy(ptr, &pad, sizeof(size_t));
