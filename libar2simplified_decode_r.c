@@ -47,7 +47,8 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 	ssize_t r;
 # ifdef AT_RANDOM
 	uintptr_t raddr_;
-	uint16_t *raddr;
+	const unsigned char *raddr;
+	size_t j;
 # endif
 #endif
 
@@ -70,15 +71,9 @@ random_salt(char *out, size_t n, int (*random_byte_generator)(char *out, size_t 
 #if defined(__linux__) && defined(AT_RANDOM)
 				raddr_ = (uintptr_t)getauxval(AT_RANDOM);
 				if (raddr_) {
-					raddr = (void *)raddr_;
-					seed ^= (unsigned)raddr[0];
-					seed ^= (unsigned)raddr[1];
-					seed ^= (unsigned)raddr[2];
-					seed ^= (unsigned)raddr[3];
-					seed ^= (unsigned)raddr[4];
-					seed ^= (unsigned)raddr[5];
-					seed ^= (unsigned)raddr[6];
-					seed ^= (unsigned)raddr[7];
+					raddr = (const void *)raddr_;
+					for (j = 0; j < 16; j++)
+						((unsigned char *)&seed)[j % sizeof(seed)] ^= raddr[j];
 				}
 #endif
 				srand(seed);
